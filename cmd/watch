@@ -1,0 +1,4 @@
+#!/bin/bash
+set -eu
+
+node_modules/.bin/elm-watch hot 'Main' & node_modules/.bin/http-server docs -c-1 --cors --port=8000 --silent

@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "@lydell/elm": "^0.19.1-12",
+    "elm-format": "^0.8.7",
+    "elm-go": "^5.0.20",
+    "elm-watch": "^1.1.2",
+    "http-server": "^14.1.1"
+  }
+}
