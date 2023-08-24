@@ -1,9 +1,13 @@
 module Main exposing (..)
 
 import Browser
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
+import Element exposing (..)
+import Element.Background as Background
+import Element.Border as Border
+import Element.Font as Font
+import Element.Input as Input
+import Html
+import Html.Events
 import Json.Decode
 
 
@@ -108,49 +112,65 @@ updateTodo mapTodo id model =
     }
 
 
-view : Model -> Html Msg
+view : Model -> Html.Html Msg
 view model =
-    div []
-        ([ div []
-            [ input
-                [ onInput NewText
-                , value model.input
-                , onEnter AddTodo
-                ]
-                [ text "-" ]
-            , button [ onClick AddTodo ] [ text "Add TODO" ]
+    layout [ padding 10 ] <|
+        column
+            [ spacing 20
+            , centerX
+            , Background.color <| rgb 0.9 0.8 0.8
+            , padding 20
+            , Border.rounded 10
             ]
-         ]
-            ++ viewHelper "TODOs"
-                (\todo -> not todo.deleted && not todo.done)
-                model.todos
-                (\id ->
-                    [ button [ onClick (Delete id) ] [ text "Delete" ]
-                    , button [ onClick (Done id) ] [ text "Done" ]
-                    ]
-                )
-            ++ viewHelper "Done"
-                .done
-                model.todos
-                (\id ->
-                    [ button [ onClick (Undone id) ] [ text "Undone" ] ]
-                )
-            ++ viewHelper "Deleted"
-                .deleted
-                model.todos
-                (\id ->
-                    [ button [ onClick (Undelete id) ] [ text "Undelete" ] ]
-                )
-        )
+            ([ Input.text [ htmlAttribute <| onEnter AddTodo ]
+                { label = Input.labelHidden ""
+                , onChange = NewText
+                , placeholder = Just <| Input.placeholder [] <| text "New TODO"
+                , text = model.input
+                }
+             ]
+                ++ viewHelper "TODOs"
+                    (\todo -> not todo.deleted && not todo.done)
+                    model.todos
+                    (\id ->
+                        [ Input.button buttonAttrs { label = text "Delete", onPress = Just <| Delete id }
+                        , Input.button buttonAttrs { label = text "Done", onPress = Just <| Done id }
+                        ]
+                    )
+                ++ viewHelper "Done"
+                    .done
+                    model.todos
+                    (\id ->
+                        [ Input.button buttonAttrs { label = text "Undone", onPress = Just <| Undone id }
+                        ]
+                    )
+                ++ viewHelper "Deleted"
+                    .deleted
+                    model.todos
+                    (\id ->
+                        [ Input.button buttonAttrs { label = text "Undelete", onPress = Just <| Undelete id }
+                        ]
+                    )
+            )
 
 
-viewHelper : String -> (Todo -> Bool) -> List Todo -> (Int -> List (Html msg)) -> List (Html msg)
+buttonAttrs : List (Attribute msg)
+buttonAttrs =
+    [ Border.width 1
+    , Background.color <| rgb 0.8 0.8 0.8
+    , Border.color <| rgb 0.5 0.5 0.5
+    , padding 6
+    , Border.rounded 5
+    ]
+
+
+viewHelper : String -> (Todo -> Bool) -> List Todo -> (Int -> List (Element msg)) -> List (Element msg)
 viewHelper title filter todos elements =
-    [ h2 [] [ text title ]
-    , div []
+    [ el [ Font.size 20 ] <| text title
+    , column [ spacing 10 ]
         (List.map
             (\todo ->
-                div []
+                row [ spacing 10 ]
                     (elements todo.id
                         ++ [ text (String.fromInt todo.id)
                            , text " - "
@@ -163,9 +183,9 @@ viewHelper title filter todos elements =
     ]
 
 
-onEnter : Msg -> Attribute Msg
+onEnter : Msg -> Html.Attribute Msg
 onEnter msg =
-    on "keydown"
+    Html.Events.on "keydown"
         (Json.Decode.andThen
             (\code ->
                 if code == 13 then
@@ -174,5 +194,5 @@ onEnter msg =
                 else
                     Json.Decode.fail "not ENTER"
             )
-            keyCode
+            Html.Events.keyCode
         )
