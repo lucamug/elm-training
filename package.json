@@ -3,8 +3,6 @@
     "elm": "^0.19.1-6",
     "elm-format": "^0.8.7",
     "elm-go": "^5.0.20",
-    "elm-review": "^2.11.2",
-    "elm-watch": "^1.1.2",
-    "http-server": "^14.1.1"
+    "elm-review": "^2.11.2"
   }
 }

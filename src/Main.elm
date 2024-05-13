@@ -1,24 +1,17 @@
 module Main exposing (main)
 
 import Browser
-import Html exposing (..)
+import Html exposing (Html, button, div, p, text)
+import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-
-
-xxx =
-    30
-
-
-a =
-    10 + xxx
 
 
 type alias Model =
     { count : Int }
 
 
-initialModel : Model
-initialModel =
+init : Model
+init =
     { count = 0 }
 
 
@@ -39,17 +32,17 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ button [ onClick Increment ] [ text "+1" ]
-        , div [] [ text <| String.fromInt model.count ]
-        , button [ onClick Decrement ] [ text "-1" ]
+    div [ style "margin" "40px" ]
+        [ button [ onClick Increment ] [ text "Increment" ]
+        , p [] [ text <| String.fromInt model.count ]
+        , button [ onClick Decrement ] [ text "Decrement" ]
         ]
 
 
 main : Program () Model Msg
 main =
     Browser.sandbox
-        { init = initialModel
+        { init = init
         , view = view
         , update = update
         }
