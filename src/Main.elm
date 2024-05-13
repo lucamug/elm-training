@@ -1,12 +1,16 @@
 module Main exposing (main)
 
 import Browser
-import Html exposing (Html, button, div, text)
-import Html.Events exposing (onClick)
+import Html exposing (..)
+import Html.Events exposing (..)
 
 
+xxx =
+    30
 
--- See also https://ellie-app.com/new
+
+a =
+    10 + xxx
 
 
 type alias Model =
