@@ -5,10 +5,11 @@ module Main exposing (..)
 -- Read how it works:
 --   https://guide.elm-lang.org/architecture/buttons.html
 --
+-- import Html.Events exposing (..)
 
 import Browser
-import Html exposing (..)
-import Html.Events exposing (..)
+import Element exposing (..)
+import Html
 
 
 
@@ -64,11 +65,29 @@ update msg model =
             { model | input = input }
 
 
-view : Model -> Html Msg
+view : Model -> Html.Html Msg
 view model =
-    div []
-        [ button [ onClick Decrement ] [ text "-" ]
-        , input [ onInput NewText ] [ text "-" ]
-        , div [] [ text (Debug.toString model) ]
-        , button [ onClick Increment ] [ text "+" ]
-        ]
+    layout [ padding 10 ] <|
+        row [ spacing 10 ]
+            [ text "Hi"
+            , text "Hi"
+            , text "Hi"
+            , text <| Debug.toString a
+            ]
+
+
+a =
+    1 + b
+
+
+b =
+    3
+
+
+
+-- div []
+--     [ button [ onClick Decrement ] [ text "-" ]
+--     , input [ onInput NewText ] [ text "-" ]
+--     , div [] [ text (Debug.toString model) ]
+--     , button [ onClick Increment ] [ text "+" ]
+--     ]
