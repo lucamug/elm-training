@@ -1,5 +1,4 @@
 #!/bin/bash
 set -eu
 
-echo "Starting at http://localhost:8000/"
-npx elm-watch@2.0.0-beta.2 hot Main | cat
+npx elm-watch@2.0.0-beta.3 hot Main

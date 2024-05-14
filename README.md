@@ -19,3 +19,13 @@ Then open http://localhost:8000/ in the browser and edit the file `src/Main.elm`
 [Parcel](https://parceljs.org/languages/elm), [Vite](https://github.com/hmsk/vite-plugin-elm), and [other systems](https://www.lindsaykwardell.com/blog/setting-up-elm-in-2022) also support Elm.
 
 To learn about Elm, refer to the [Official Elm Guide](https://guide.elm-lang.org/).
+
+If something is not working, try installing these modules also globally:
+
+```
+npm install -g elm
+npm install -g elm-format
+npm install -g elm-watch
+npm install -g elm-go
+npm install -g elm-review
+```
