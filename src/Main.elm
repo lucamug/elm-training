@@ -3,13 +3,18 @@ module Main exposing (main)
 import Browser
 import Browser.Events
 import Element exposing (..)
+import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
 import Html exposing (Html)
-import Html.Attributes exposing (..)
+import Html.Attributes
 import Html.Events exposing (..)
 import Time
+
+
+
+-- https://emojipedia.org/search?q=ufo
 
 
 type Direction
@@ -49,12 +54,12 @@ type Msg
 
 speedFire : number
 speedFire =
-    2
+    4
 
 
-speed : number
-speed =
-    2
+speedSaucer : number
+speedSaucer =
+    5
 
 
 update : Msg -> Model -> ( Model, Cmd msg )
@@ -66,7 +71,7 @@ update msg model =
         Fire ->
             ( { model
                 | count = model.count - 1
-                , projectiles = ( 40, model.obj1x + 60 ) :: model.projectiles
+                , projectiles = ( 0, model.obj1x ) :: model.projectiles
               }
             , Cmd.none
             )
@@ -80,12 +85,12 @@ update msg model =
                 , obj1x =
                     case model.obj1Moving of
                         Left ->
-                            model.obj1x - speed
+                            model.obj1x - speedSaucer
 
                         Right ->
-                            model.obj1x + speed
+                            model.obj1x + speedSaucer
                 , obj1Moving =
-                    if model.obj1x > 200 then
+                    if model.obj1x > 250 then
                         Left
 
                     else if model.obj1x < 0 then
@@ -96,7 +101,7 @@ update msg model =
                 , projectiles =
                     model.projectiles
                         |> List.map (\( y, x ) -> ( y + speedFire, x ))
-                        |> List.filter (\( y, _ ) -> y < 300)
+                        |> List.filter (\( y, _ ) -> y < 500)
               }
             , Cmd.none
             )
@@ -104,29 +109,72 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    layout [ padding 40 ] <|
-        column [ spacing 20 ]
-            [ column
-                ([ spacing 20 ]
-                    ++ List.map
-                        (\( y, x ) ->
-                            inFront <| el [ moveDown y, moveRight x, Font.size 60 ] <| text <| "☂️"
-                        )
-                        model.projectiles
-                )
+    layout [ padding 40, Background.color <| rgb 0.1 0.2 0.4 ] <|
+        column
+            ([ spacing 20
+             , inFront <|
+                el
+                    [ Font.size 500
+                    , moveDown 450
+                    , moveLeft 60
+                    ]
+                <|
+                    text "🪐"
+             ]
+                ++ List.map
+                    (\( y, x ) ->
+                        inFront <|
+                            el
+                                [ moveDown <| y + 140
+                                , moveRight <| x + 40
+                                , Font.size <|
+                                    if y > 490 then
+                                        60
+
+                                    else
+                                        30
+                                ]
+                            <|
+                                text <|
+                                    if y > 490 then
+                                        "💥"
+
+                                    else
+                                        "👽"
+                    )
+                    model.projectiles
+            )
+            [ row [ width <| px 300 ]
                 [ Input.button
-                    [ padding 20
-                    , Border.width 1
-                    , moveRight model.obj1x
+                    [ padding 10
+                    , Background.color <| rgb 1 1 1
+                    , Border.rounded 100
+                    , Font.size 50
                     ]
-                    { label = text "Increment", onPress = Just Increment }
-                , Input.button
-                    [ padding 20
-                    , Border.width 1
+                    { label = text "👽", onPress = Just Fire }
+                , el
+                    [ paddingXY 20 10
+                    , Background.color <| rgb 1 1 1
+                    , Border.rounded 100
+                    , Font.size 50
+                    , alignRight
                     ]
-                    { label = text "Fire", onPress = Just Fire }
-                , text <| String.fromInt model.count
+                  <|
+                    text <|
+                        String.fromInt model.count
                 ]
+            , Input.button
+                [ Font.size 100
+                , moveRight model.obj1x
+                , htmlAttribute <| Html.Attributes.style "transition" "transform 100ms"
+                , case model.obj1Moving of
+                    Left ->
+                        rotate 0
+
+                    Right ->
+                        rotate 0.6
+                ]
+                { label = text "🛸", onPress = Just Increment }
             ]
 
 
