@@ -29,17 +29,19 @@ type alias Model =
     , obj1x : Float
     , obj1Moving : Direction
     , projectiles : List ( Float, Float )
+    , pause : Bool
     }
 
 
 init : ( Model, Cmd msg )
 init =
-    ( { count = 10
+    ( { count = startingPoint
       , inputValue = "Initial value"
       , posix = Time.millisToPosix 0
       , obj1x = 0
       , obj1Moving = Right
       , projectiles = []
+      , pause = False
       }
     , Cmd.none
     )
@@ -50,10 +52,15 @@ type Msg
     | Fire
     | GotNewText String
     | Tick Time.Posix
+    | TogglePause
 
 
-speedFire : number
-speedFire =
+startingPoint =
+    10
+
+
+speedAliens : number
+speedAliens =
     4
 
 
@@ -70,7 +77,7 @@ update msg model =
 
         Fire ->
             ( { model
-                | count = model.count - 1
+                | count = model.count - 5
                 , projectiles = ( 0, model.obj1x ) :: model.projectiles
               }
             , Cmd.none
@@ -90,7 +97,7 @@ update msg model =
                         Right ->
                             model.obj1x + speedSaucer
                 , obj1Moving =
-                    if model.obj1x > 250 then
+                    if model.obj1x > 280 then
                         Left
 
                     else if model.obj1x < 0 then
@@ -100,35 +107,81 @@ update msg model =
                         model.obj1Moving
                 , projectiles =
                     model.projectiles
-                        |> List.map (\( y, x ) -> ( y + speedFire, x ))
-                        |> List.filter (\( y, _ ) -> y < 500)
+                        |> List.map (\( y, x ) -> ( y + speedAliens, x ))
+                        |> List.filter alienStillGoingDown
+                , count =
+                    model.projectiles
+                        |> List.filter alienExploding
+                        |> (\list -> model.count + List.length list)
               }
             , Cmd.none
             )
 
+        TogglePause ->
+            if model.count > 100 || model.count < 0 then
+                ( { model
+                    | pause = False
+                    , count = startingPoint
+                    , projectiles = []
+                  }
+                , Cmd.none
+                )
+
+            else
+                ( { model | pause = not model.pause }, Cmd.none )
+
+
+alienStillGoingDown : ( number, number1 ) -> Bool
+alienStillGoingDown ( y, x ) =
+    y < 450 || (y < 600 && (x < 80 || x > 200))
+
+
+alienExploding : ( number, number1 ) -> Bool
+alienExploding ( y, x ) =
+    y > 400 && x > 80 && x < 200
+
+
+buttonAttrs : List (Attribute msg)
+buttonAttrs =
+    [ padding 15
+    , Background.color <| rgb 1 1 1
+    , Border.rounded 100
+    , Font.size 50
+    ]
+
 
 view : Model -> Html Msg
 view model =
-    layout [ padding 40, Background.color <| rgb 0.1 0.2 0.4 ] <|
+    layout
+        [ padding 0
+        , Background.color <| rgb 0.1 0.2 0.4
+        ]
+    <|
         column
             ([ spacing 20
+             , centerX
              , inFront <|
                 el
-                    [ Font.size 500
-                    , moveDown 450
-                    , moveLeft 60
+                    [ Font.size 160
+                    , moveDown 600
+                    , moveRight 120
                     ]
                 <|
-                    text "🪐"
+                    text <|
+                        if model.count > 100 then
+                            "💥"
+
+                        else
+                            "🪐"
              ]
                 ++ List.map
                     (\( y, x ) ->
                         inFront <|
                             el
-                                [ moveDown <| y + 140
+                                [ moveDown <| y + 210
                                 , moveRight <| x + 40
                                 , Font.size <|
-                                    if y > 490 then
+                                    if alienExploding ( y, x ) then
                                         60
 
                                     else
@@ -136,7 +189,7 @@ view model =
                                 ]
                             <|
                                 text <|
-                                    if y > 490 then
+                                    if alienExploding ( y, x ) then
                                         "💥"
 
                                     else
@@ -144,24 +197,28 @@ view model =
                     )
                     model.projectiles
             )
-            [ row [ width <| px 300 ]
+            [ row [ padding 30, spacing 30 ]
                 [ Input.button
-                    [ padding 10
-                    , Background.color <| rgb 1 1 1
-                    , Border.rounded 100
-                    , Font.size 50
-                    ]
+                    buttonAttrs
                     { label = text "👽", onPress = Just Fire }
+                , Input.button
+                    buttonAttrs
+                    { label =
+                        text <|
+                            case model.pause || model.count > 100 || model.count < 0 of
+                                True ->
+                                    "▶️"
+
+                                False ->
+                                    "⏸️"
+                    , onPress = Just TogglePause
+                    }
                 , el
-                    [ paddingXY 20 10
-                    , Background.color <| rgb 1 1 1
-                    , Border.rounded 100
-                    , Font.size 50
-                    , alignRight
-                    ]
+                    (buttonAttrs ++ [ width <| px 120 ])
                   <|
-                    text <|
-                        String.fromInt model.count
+                    el [ centerX ] <|
+                        text <|
+                            String.fromInt model.count
                 ]
             , Input.button
                 [ Font.size 100
@@ -174,7 +231,15 @@ view model =
                     Right ->
                         rotate 0.6
                 ]
-                { label = text "🛸", onPress = Just Increment }
+                { label =
+                    text <|
+                        if model.count < 0 then
+                            "💥"
+
+                        else
+                            "🛸"
+                , onPress = Just Increment
+                }
             ]
 
 
@@ -184,5 +249,11 @@ main =
         { init = \() -> init
         , view = view
         , update = update
-        , subscriptions = \_ -> Browser.Events.onAnimationFrame Tick
+        , subscriptions =
+            \model ->
+                if model.pause || model.count > 100 || model.count < 0 then
+                    Sub.none
+
+                else
+                    Browser.Events.onAnimationFrame Tick
         }
