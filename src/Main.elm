@@ -4,6 +4,7 @@ import Browser
 import Browser.Events
 import Element exposing (..)
 import Element.Border as Border
+import Element.Font as Font
 import Element.Input as Input
 import Html exposing (Html)
 import Html.Attributes exposing (..)
@@ -96,8 +97,6 @@ update msg model =
                     model.projectiles
                         |> List.map (\( y, x ) -> ( y + speedFire, x ))
                         |> List.filter (\( y, _ ) -> y < 300)
-
-                -- , obj1y = model.obj1y + 0
               }
             , Cmd.none
             )
@@ -107,12 +106,11 @@ view : Model -> Html Msg
 view model =
     layout [ padding 40 ] <|
         column [ spacing 20 ]
-            -- [ text <| String.fromInt <| Time.posixToMillis model.posix
             [ column
                 ([ spacing 20 ]
                     ++ List.map
                         (\( y, x ) ->
-                            inFront <| el [ moveDown y, moveRight x ] <| text <| "☂️"
+                            inFront <| el [ moveDown y, moveRight x, Font.size 60 ] <| text <| "☂️"
                         )
                         model.projectiles
                 )
