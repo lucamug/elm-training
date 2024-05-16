@@ -13,10 +13,6 @@ import Html.Events exposing (..)
 import Time
 
 
-
--- https://emojipedia.org/search?q=ufo
-
-
 type Direction
     = Left
     | Right
@@ -24,7 +20,6 @@ type Direction
 
 type alias Model =
     { count : Int
-    , inputValue : String
     , posix : Time.Posix
     , obj1x : Float
     , obj1Moving : Direction
@@ -36,7 +31,6 @@ type alias Model =
 init : ( Model, Cmd msg )
 init =
     ( { count = startingPoint
-      , inputValue = "Initial value"
       , posix = Time.millisToPosix 0
       , obj1x = 0
       , obj1Moving = Right
@@ -50,11 +44,11 @@ init =
 type Msg
     = Increment
     | Fire
-    | GotNewText String
     | Tick Time.Posix
     | TogglePause
 
 
+startingPoint : number
 startingPoint =
     10
 
@@ -82,9 +76,6 @@ update msg model =
               }
             , Cmd.none
             )
-
-        GotNewText newText ->
-            ( { model | inputValue = newText }, Cmd.none )
 
         Tick posix ->
             ( { model
