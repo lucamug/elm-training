@@ -21,8 +21,8 @@ type Direction
 type alias Model =
     { count : Int
     , posix : Time.Posix
-    , obj1x : Float
-    , obj1Moving : Direction
+    , objectX : Float
+    , objectMoving : Direction
     , projectiles : List ( Float, Float )
     , pause : Bool
     }
@@ -32,10 +32,10 @@ init : ( Model, Cmd msg )
 init =
     ( { count = startingPoint
       , posix = Time.millisToPosix 0
-      , obj1x = 0
-      , obj1Moving = Right
+      , objectX = 0
+      , objectMoving = Right
       , projectiles = []
-      , pause = False
+      , pause = True
       }
     , Cmd.none
     )
@@ -50,7 +50,7 @@ type Msg
 
 startingPoint : number
 startingPoint =
-    10
+    20
 
 
 speedAliens : number
@@ -72,7 +72,7 @@ update msg model =
         Fire ->
             ( { model
                 | count = model.count - 5
-                , projectiles = ( 0, model.obj1x ) :: model.projectiles
+                , projectiles = ( 0, model.objectX ) :: model.projectiles
               }
             , Cmd.none
             )
@@ -80,22 +80,22 @@ update msg model =
         Tick posix ->
             ( { model
                 | posix = posix
-                , obj1x =
-                    case model.obj1Moving of
+                , objectX =
+                    case model.objectMoving of
                         Left ->
-                            model.obj1x - speedSaucer
+                            model.objectX - speedSaucer
 
                         Right ->
-                            model.obj1x + speedSaucer
-                , obj1Moving =
-                    if model.obj1x > 280 then
+                            model.objectX + speedSaucer
+                , objectMoving =
+                    if model.objectX > 280 then
                         Left
 
-                    else if model.obj1x < 0 then
+                    else if model.objectX < 0 then
                         Right
 
                     else
-                        model.obj1Moving
+                        model.objectMoving
                 , projectiles =
                     model.projectiles
                         |> List.map (\( y, x ) -> ( y + speedAliens, x ))
@@ -213,9 +213,9 @@ view model =
                 ]
             , Input.button
                 [ Font.size 100
-                , moveRight model.obj1x
+                , moveRight model.objectX
                 , htmlAttribute <| Html.Attributes.style "transition" "transform 100ms"
-                , case model.obj1Moving of
+                , case model.objectMoving of
                     Left ->
                         rotate 0
 
@@ -231,6 +231,32 @@ view model =
                             "🛸"
                 , onPress = Just Increment
                 }
+            , if model.pause || model.count > 100 || model.count < 0 then
+                column [ width fill, spacing 20 ]
+                    [ el
+                        [ Font.color <| rgb 1 0.4 0.3
+                        , Font.size 40
+                        , centerX
+                        ]
+                      <|
+                        text <|
+                            if model.count > 100 then
+                                "YOU WIN!"
+
+                            else if model.count < 0 then
+                                "GAME OVER"
+
+                            else
+                                ""
+                    , Input.button
+                        (buttonAttrs ++ [ centerX, paddingXY 30 10 ])
+                        { label = text "PLAY"
+                        , onPress = Just TogglePause
+                        }
+                    ]
+
+              else
+                none
             ]
 
 
