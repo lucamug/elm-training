@@ -7,9 +7,8 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
-import Html exposing (Html)
+import Html
 import Html.Attributes
-import Html.Events exposing (..)
 import Time
 
 
@@ -141,7 +140,7 @@ buttonAttrs =
     ]
 
 
-view : Model -> Html Msg
+view : Model -> Html.Html Msg
 view model =
     layout
         [ padding 0
@@ -196,12 +195,11 @@ view model =
                     buttonAttrs
                     { label =
                         text <|
-                            case model.pause || model.count > 100 || model.count < 0 of
-                                True ->
-                                    "▶️"
+                            if model.pause || model.count > 100 || model.count < 0 then
+                                "▶️"
 
-                                False ->
-                                    "⏸️"
+                            else
+                                "⏸️"
                     , onPress = Just TogglePause
                     }
                 , el
@@ -241,7 +239,7 @@ view model =
                       <|
                         text <|
                             if model.count > 100 then
-                                "YOU WIN!"
+                                "You WIN!"
 
                             else if model.count < 0 then
                                 "GAME OVER"
