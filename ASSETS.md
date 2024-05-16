@@ -19,6 +19,8 @@ alienExploding ( y, x ) =
     
 htmlAttribute <| Html.Attributes.style "transition" "transform 100ms"
     
+el [ Font.color <| rgb 1 1 1, Font.size 50 ] <| text <| "FPS " ++ String.fromInt (round (1000 / model.delta))
+    
 ## Imports
 
 import Browser

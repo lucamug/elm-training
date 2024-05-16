@@ -9,7 +9,6 @@ import Element.Font as Font
 import Element.Input as Input
 import Html
 import Html.Attributes
-import Time
 
 
 type Direction
@@ -19,7 +18,7 @@ type Direction
 
 type alias Model =
     { count : Int
-    , posix : Time.Posix
+    , delta : Float
     , objectX : Float
     , objectMoving : Direction
     , projectiles : List ( Float, Float )
@@ -30,7 +29,7 @@ type alias Model =
 init : ( Model, Cmd msg )
 init =
     ( { count = startingPoint
-      , posix = Time.millisToPosix 0
+      , delta = 0
       , objectX = 0
       , objectMoving = Right
       , projectiles = []
@@ -43,7 +42,7 @@ init =
 type Msg
     = Increment
     | Fire
-    | Tick Time.Posix
+    | Tick Float
     | TogglePause
 
 
@@ -76,9 +75,9 @@ update msg model =
             , Cmd.none
             )
 
-        Tick posix ->
+        Tick delta ->
             ( { model
-                | posix = posix
+                | delta = delta
                 , objectX =
                     case model.objectMoving of
                         Left ->
@@ -229,6 +228,7 @@ view model =
                             "🛸"
                 , onPress = Just Increment
                 }
+            , el [ Font.color <| rgb 1 1 1, Font.size 50 ] <| text <| "FPS " ++ String.fromInt (round (1000 / model.delta))
             , if model.pause || model.count > 100 || model.count < 0 then
                 column [ width fill, spacing 20 ]
                     [ el
@@ -270,5 +270,5 @@ main =
                     Sub.none
 
                 else
-                    Browser.Events.onAnimationFrame Tick
+                    Browser.Events.onAnimationFrameDelta Tick
         }
