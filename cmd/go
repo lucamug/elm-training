@@ -1,4 +1,0 @@
-#!/bin/bash
-set -eu
-
-node_modules/.bin/elm-go src/Main.elm --hot --dir public --open -- --output="public/elm.js" --debug

@@ -1,4 +1,4 @@
 #!/bin/bash
 set -eu
 
-node_modules/.bin/elm-format src --yes
+npx elm-format src --yes

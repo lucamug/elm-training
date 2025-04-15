@@ -1,4 +1,4 @@
 #!/bin/bash
 set -eu
 
-node_modules/.bin/elm-review --fix-all
+npx elm-review --fix-all

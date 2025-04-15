@@ -1,4 +1,0 @@
-#!/bin/bash
-set -eu
-
-npx elm-watch@2.0.0-beta.3 hot Main
