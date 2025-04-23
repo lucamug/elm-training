@@ -1,327 +1,125 @@
 module Main exposing (main)
 
 import Browser
-import Browser.Events
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
-import Element.Font as Font
 import Element.Input as Input
 import Html
-import Html.Attributes
-
-
-
--- 💥 🪐 👽 ▶️ ⏸️ 🛸
-
-
-type State
-    = Playing
-    | Over
-    | Paused
-    | Won
-
-
-type Direction
-    = Left
-    | Right
 
 
 type alias Model =
-    { points : Int
-    , positionX : Float
-    , positionY : Float
-    , direction : Direction
-    , state : State
-    , aliens : List ( Float, Float )
+    { count : Int
+    , todos : List String
+    , newTodo : String
     }
-
-
-init : ( Model, Cmd msg )
-init =
-    ( { points = 10
-      , positionX = 0
-      , positionY = 0
-      , direction = Right
-      , state = Playing
-      , aliens = []
-      }
-    , Cmd.none
-    )
 
 
 type Msg
     = Increment
-    | Fire
-    | OnAnimationFrame Float
-    | TogglePause
+    | Decrement
+    | Completed String
+    | UserChangedTheNewTodo String
+    | Add
+    | UserChangedTheExistingTodo String
 
 
-speedX : Float
-speedX =
-    5
+init : Model
+init =
+    { count = 0
+    , todos =
+        [ "todo 1"
+        , "todo 2"
+        , "todo 3"
+        , "todo 4"
+        , "todo 5"
+        ]
+    , newTodo = ""
+    }
 
 
-speedY : Float
-speedY =
-    10
-
-
-speedAlien : Float
-speedAlien =
-    4
-
-
-update : Msg -> Model -> ( Model, Cmd msg )
+update : Msg -> Model -> Model
 update msg model =
     case msg of
         Increment ->
-            ( { model | points = model.points + 1 }, Cmd.none )
+            { model | count = model.count + 1 }
 
-        Fire ->
-            ( { model
-                | aliens = ( model.positionX, model.positionY ) :: model.aliens
-              }
-            , Cmd.none
-            )
+        Decrement ->
+            { model | count = model.count - 1 }
 
-        OnAnimationFrame delta ->
-            let
-                newPoints =
-                    model.aliens
-                        |> List.map
-                            (\( alienX, alienY ) -> ( alienX, alienY + speedAlien ))
-                        |> List.filter
-                            (\( alienX, alienY ) -> hitTargetEnd ( alienX, alienY ))
-                        |> List.length
-                        |> (\qtyAliensThatHitTarget -> model.points - qtyAliensThatHitTarget)
-            in
-            ( { model
-                | positionX =
-                    case model.direction of
-                        Left ->
-                            model.positionX - speedX
+        Completed string ->
+            { model | todos = List.filter (\todo -> todo /= string) model.todos }
 
-                        Right ->
-                            model.positionX + speedX
-                , positionY =
-                    if model.positionX > 270 || model.positionX < 0 then
-                        model.positionY + speedY
+        UserChangedTheNewTodo string ->
+            { model | newTodo = string }
 
-                    else
-                        model.positionY
-                , direction =
-                    if model.positionX > 270 then
-                        Left
-
-                    else if model.positionX < 0 then
-                        Right
-
-                    else
-                        model.direction
-                , aliens =
-                    model.aliens
-                        |> List.map
-                            (\( alienX, alienY ) -> ( alienX, alienY + speedAlien ))
-                        |> List.filter
-                            (\( _, alienY ) -> alienY < 500)
-                        |> List.filter
-                            (\( alienX, alienY ) -> not (hitTargetEnd ( alienX, alienY )))
-                , points =
-                    newPoints
-                , state =
-                    if newPoints == 0 then
-                        Won
-
-                    else if model.positionY == 330 && model.positionX < 185 then
-                        Over
-
-                    else
-                        model.state
-              }
-            , Cmd.none
-            )
-
-        TogglePause ->
-            ( { model
-                | state =
-                    case model.state of
-                        Playing ->
-                            Paused
-
-                        Over ->
-                            Over
-
-                        Paused ->
-                            Playing
-
-                        Won ->
-                            Won
-              }
-            , Cmd.none
-            )
-
-
-hitTargetStart : ( Float, Float ) -> Bool
-hitTargetStart ( alienX, alienY ) =
-    alienY > 320 && within { min = 100, max = 200 } ( alienX, alienY )
-
-
-hitTargetEnd : ( Float, Float ) -> Bool
-hitTargetEnd ( alienX, alienY ) =
-    alienY > 370 && within { min = 100, max = 200 } ( alienX, alienY )
-
-
-within : { min : Float, max : Float } -> ( Float, Float ) -> Bool
-within { min, max } ( alienX, _ ) =
-    min < alienX && alienX < max
-
-
-attrsButton : List (Attribute msg)
-attrsButton =
-    [ Border.width 1
-    , paddingXY 20 10
-    , Border.rounded 100
-    , Background.color <| rgb 1 1 1
-    , Font.size 40
-    ]
+        Add ->
+            { model
+                | todos = model.newTodo :: model.todos
+                , newTodo = ""
+            }
 
 
 view : Model -> Html.Html Msg
 view model =
-    layout [ padding 20, Background.color <| rgb 0 0.4 0.6 ] <|
-        column
-            ([ spacing 20
-             ]
-                ++ [ inFront <|
-                        el
-                            [ Font.size 150
-                            , moveDown 450
-                            , moveRight 100
-                            ]
-                        <|
-                            text "🪐"
-                   ]
-                ++ List.map
-                    (\( alienX, alienY ) ->
-                        inFront <|
-                            el
-                                [ Font.size 30
-                                , moveRight (alienX + 30)
-                                , moveDown (alienY + 120)
-                                ]
-                            <|
-                                text
-                                    (if hitTargetStart ( alienX, alienY ) then
-                                        "💥"
-
-                                     else
-                                        "👽"
-                                    )
-                    )
-                    model.aliens
-                ++ (if model.state == Over then
-                        [ inFront <|
-                            el
-                                (attrsButton
-                                    ++ [ moveDown 200
-                                       , moveRight 50
-                                       ]
-                                )
-                            <|
-                                text "Game Over!"
-                        ]
-
-                    else if model.state == Won then
-                        [ inFront <|
-                            el
-                                (attrsButton
-                                    ++ [ moveDown 200
-                                       , moveRight 50
-                                       ]
-                                )
-                            <|
-                                text "You Win!"
-                        ]
-
-                    else
-                        []
-                   )
-             -- ++ [ inFront <|
-             --         paragraph
-             --             [ moveDown 100, Font.color <| rgb 1 1 1 ]
-             --             [ text <|
-             --                 Debug.toString model
-             --             ]
-             --    ]
-            )
-            [ row [ spacing 40 ]
-                [ Input.button attrsButton
-                    { onPress = Just Fire
-                    , label = text "👽"
-                    }
-                , Input.button attrsButton
-                    { onPress = Just TogglePause
-                    , label =
-                        text <|
-                            case model.state of
-                                Playing ->
-                                    "⏸️"
-
-                                Over ->
-                                    "-"
-
-                                Paused ->
-                                    "▶️"
-
-                                Won ->
-                                    "-"
-                    }
-                , el attrsButton <| text <| String.fromInt model.points
-                ]
+    layout [ padding 20 ]
+        (column [ Element.spacing 10 ]
+            [ text (String.fromInt model.count)
             , Input.button
-                [ moveRight model.positionX
-                , moveDown model.positionY
-                , Font.size 100
-                , case model.direction of
-                    Left ->
-                        rotate 0
-
-                    Right ->
-                        rotate 0.6
-                , htmlAttribute <| Html.Attributes.style "transition" "transform 100ms"
-                ]
+                [ Border.width 1, padding 10, Border.rounded 10, Background.color <| rgba255 0 0 0 0.1 ]
                 { onPress = Just Increment
-                , label =
-                    text
-                        (if model.state == Over then
-                            "💥"
-
-                         else
-                            "🛸"
-                        )
+                , label = text "Increment"
                 }
+            , Input.button
+                [ Border.width 1, padding 10, Border.rounded 10, Background.color <| rgba255 0 0 0 0.1 ]
+                { onPress = Just Decrement
+                , label = text "Decrement"
+                }
+            , row [ spacing 10 ]
+                [ html <| Html.input [] []
+                , Input.text []
+                    { onChange = UserChangedTheNewTodo
+                    , text = model.newTodo
+                    , placeholder = Nothing
+                    , label = Input.labelLeft [] (text "New Todo")
+                    }
+                , Input.button
+                    [ Border.width 1, padding 10, Border.rounded 10, Background.color <| rgba255 0 0 0 0.1 ]
+                    { onPress = Just Add
+                    , label = text "Add"
+                    }
+                ]
+            , column [ spacing 10 ]
+                (List.map
+                    (\todo ->
+                        row [ spacing 20 ]
+                            [ Input.text []
+                                { onChange = UserChangedTheExistingTodo
+                                , text = todo
+                                , placeholder = Nothing
+                                , label = Input.labelLeft [] (text "Edit")
+                                }
+                            , Input.button
+                                [ Border.width 1, padding 10, Border.rounded 10, Background.color <| rgba255 0 0 0 0.1 ]
+                                { onPress = Just (Completed todo)
+                                , label = text "Completed"
+                                }
+                            ]
+                    )
+                    model.todos
+                )
             ]
+        )
 
 
 main : Program () Model Msg
 main =
-    Browser.element
-        { init = \_ -> init
+    Browser.sandbox
+        { init = init
         , view = view
         , update = update
-        , subscriptions =
-            \model ->
-                case model.state of
-                    Playing ->
-                        Browser.Events.onAnimationFrameDelta OnAnimationFrame
-
-                    Over ->
-                        Sub.none
-
-                    Paused ->
-                        Sub.none
-
-                    Won ->
-                        Sub.none
         }
+
+
+
+-- Nested TEA (The Elm Architecture)
